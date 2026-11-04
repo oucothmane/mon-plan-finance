@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="theme-color" content="#0b0f19">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Mon Plan Finance">
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="icon.svg">
+<link rel="icon" href="icon.svg">
+<title>Mon Plan Finance</title>
+<style>
+:root{--bg:#f8fafc;--card:#fff;--text:#0f172a;--muted:#64748b;--border:#e2e8f0;--primary:#3b82f6;--success:#10b981;--danger:#ef4444;--warning:#f59e0b;--purple:#8b5cf6;--input:#fff}
+[data-theme=dark]{--bg:#0b0f19;--card:#111827;--text:#f3f4f6;--muted:#9ca3af;--border:#1f2937;--danger:#f87171;--warning:#fbbf24;--purple:#a78bfa;--input:#1f2937}
+*{box-sizing:border-box;margin:0;padding:0;font-family:system-ui,-apple-system,sans-serif}
+body{background:var(--bg);color:var(--text);max-width:900px;margin:0 auto;padding:16px 14px calc(90px + env(safe-area-inset-bottom))}
+h1{font-size:1.3rem}
+.sub{font-size:.8rem;color:var(--muted);margin-top:2px}
+header{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;padding-top:env(safe-area-inset-top)}
+button{cursor:pointer;border:none;border-radius:10px;padding:9px 14px;font-weight:600;font-size:.85rem;background:var(--card);color:var(--text);border:1px solid var(--border)}
+.btn-p{background:var(--primary);color:#fff;border-color:var(--primary)}
+.btn-d{background:rgba(239,68,68,.15);color:var(--danger);border:none;padding:5px 10px}
+nav{position:fixed;bottom:0;left:0;right:0;display:flex;background:var(--card);border-top:1px solid var(--border);padding-bottom:env(safe-area-inset-bottom);z-index:10}
+nav button{flex:1;border:none;border-radius:0;background:none;padding:14px 4px;color:var(--muted);font-size:.8rem}
+nav button.on{color:var(--primary)}
+.tab{display:none}.tab.on{display:block}
+.grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:14px}
+@media(min-width:640px){.grid{grid-template-columns:repeat(3,1fr)}}
+.kpi,.panel{background:var(--card);border:1px solid var(--border);border-radius:14px;padding:14px}
+.panel{margin-bottom:14px}
+.lbl{font-size:.7rem;color:var(--muted);font-weight:600;text-transform:uppercase;letter-spacing:.04em;margin-bottom:6px}
+.val{font-size:1.4rem;font-weight:700}
+.kin{width:100%;font-size:1.4rem;font-weight:700;background:transparent;border:1px dashed var(--border);border-radius:6px;padding:2px 6px;color:inherit}
+.kin:focus{outline:none;border-color:var(--primary);background:var(--input)}
+.ph{display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;padding-bottom:8px;border-bottom:1px solid var(--border);font-weight:700}
+.add{display:flex;gap:6px;margin-bottom:10px;flex-wrap:wrap}
+.add input,.add select{padding:9px;border:1px solid var(--border);border-radius:8px;background:var(--input);color:var(--text);font-size:.9rem;flex:1;min-width:90px}
+.add .n{flex:2;min-width:120px}
+table{width:100%;border-collapse:collapse}
+td{padding:4px 2px;border-bottom:1px solid var(--border);font-size:.88rem}
+.in{width:100%;border:1px solid transparent;background:transparent;padding:7px 5px;border-radius:6px;color:var(--text);font-size:.9rem}
+.in:focus{outline:none;border-color:var(--primary);background:var(--input)}
+.num{text-align:right;font-weight:600;width:80px}
+.pct{color:var(--muted);font-size:.75rem;text-align:right;white-space:nowrap;padding:0 4px}
+.bar{margin-bottom:10px}.bar .t{display:flex;justify-content:space-between;font-size:.83rem;font-weight:600;margin-bottom:4px}
+.track{height:8px;background:var(--bg);border-radius:9px;overflow:hidden}.fill{height:100%;border-radius:9px}
+.leg{display:flex;justify-content:space-between;font-size:.85rem;padding:5px 0}
+.dot{display:inline-block;width:11px;height:11px;border-radius:3px;margin-right:7px}
+.row{display:flex;justify-content:space-between;padding:8px 0;border-bottom:1px solid var(--border);font-size:.9rem}
+.row:last-child{border:none}
+.good{color:var(--success)}.bad{color:var(--danger)}
+.hint{font-size:.78rem;color:var(--muted);margin-top:8px;line-height:1.4}
+.actions{display:flex;gap:8px;flex-wrap:wrap}
+svg text{fill:var(--muted);font-size:10px}
+</style>
+</head>
+<body>
+<header>
+  <div><h1>💶 Mon Plan Finance</h1><div class="sub" id="mois"></div></div>
+  <button onclick="toggleTheme()" id="themeBtn">☀️</button>
+</header>
+
+<!-- BUDGET -->
+<section class="tab on" id="t-budget">
+  <div class="grid">
+    <div class="kpi"><div class="lbl">Entrées</div><div class="val" style="color:var(--primary)" id="k-in"></div></div>
+    <div class="kpi"><div class="lbl">Dépenses</div><div class="val bad" id="k-out"></div></div>
+    <div class="kpi"><div class="lbl">Épargne / mois</div><div class="val" id="k-sav"></div></div>
+    <div class="kpi"><div class="lbl">Taux d'épargne</div><div class="val" id="k-rate"></div></div>
+    <div class="kpi" style="border-color:var(--purple)"><div class="lbl" style="color:var(--purple)">💎 Patrimoine</div><input class="kin" type="number" step="any" id="patri" style="color:var(--purple)" oninput="setTop('patrimoine',this.value)"></div>
+    <div class="kpi" style="border-color:var(--warning)"><div class="lbl" style="color:var(--warning)">🏦 Crédit restant</div><input class="kin" type="number" step="any" id="cred" style="color:var(--warning)" oninput="setTop('credit',this.value)"></div>
+    <div class="kpi" style="grid-column:1/-1"><div class="lbl">🛟 Matelas de sécurité</div><div class="val" id="k-mat"></div><div class="hint" style="margin-top:4px">Mois de dépenses couverts par ton patrimoine (repère courant : 3 à 6 mois).</div></div>
+  </div>
+
+  <div class="panel">
+    <div class="ph">Suivi du mois (réel)</div>
+    <div id="real"></div>
+  </div>
+
+</section>
+
+<!-- DÉPENSES -->
+<section class="tab" id="t-base">
+  <div class="panel">
+    <div class="ph">Entrées</div>
+    <form class="add" onsubmit="add(event,'incomes')">
+      <input class="n" id="i-n" placeholder="Ex: Prime, Freelance…" required>
+      <input id="i-a" type="number" step="any" placeholder="€" required>
+      <button class="btn-p">+</button>
+    </form>
+    <table id="incomes"></table>
+  </div>
+
+  <div class="panel">
+    <div class="ph">Dépenses</div>
+    <form class="add" onsubmit="add(event,'expenses')">
+      <input class="n" id="e-n" placeholder="Ex: Assurance, Courses…" required>
+      <select id="e-c"></select>
+      <input id="e-a" type="number" step="any" placeholder="€" required>
+      <button class="btn-p">+</button>
+    </form>
+    <table id="expenses"></table>
+  </div>
+
+</section>
+
+<!-- SUIVI -->
+<section class="tab" id="t-suivi">
+  <div class="panel">
+    <div class="ph">Répartition par catégorie</div>
+    <div id="cats"></div>
+  </div>
+  <div class="panel">
+    <div class="ph">Plus gros postes (% du revenu)</div>
+    <div id="top"></div>
+  </div>
+</section>
+
+<!-- CRÉDIT -->
+<section class="tab" id="t-credit">
+  <div class="panel">
+    <div class="ph">Mon crédit</div>
+    <div class="row"><span>Crédit restant</span><b id="c-rest"></b></div>
+    <div class="row"><span>Mensualité <span class="sub">(= dépense marquée 🏦)</span></span><b id="c-men"></b></div>
+    <div class="row"><span>Mois restants (estimation)</span><b id="c-mois"></b></div>
+    <div class="row"><span>Fin estimée</span><b id="c-fin"></b></div>
+    <div class="hint">Estimation simple : crédit restant ÷ mensualité, sans les intérêts. La vraie date est sur ton tableau d'amortissement.</div>
+  </div>
+  <div class="panel">
+    <div class="ph">Et si je rembourse plus ?</div>
+    <div class="add"><input type="number" step="any" id="c-extra" placeholder="Remboursement en plus par mois (€)" oninput="calcExtra()"></div>
+    <div id="c-extra-res" class="hint"></div>
+  </div>
+</section>
+
+<!-- RÉGLAGES -->
+<section class="tab" id="t-reglages">
+  <div class="panel">
+    <div class="ph">Sauvegarde</div>
+    <div class="actions">
+      <button onclick="exportJSON()">💾 Export JSON</button>
+      <button onclick="exportCSV()">📊 Export CSV</button>
+      <button onclick="document.getElementById('imp').click()">📂 Importer</button>
+      <input type="file" id="imp" accept=".json" style="display:none" onchange="importJSON(event)">
+    </div>
+    <div class="hint">Les données sont stockées uniquement sur ton téléphone. Fais un export de temps en temps.</div>
+  </div>
+  <div class="panel">
+    <div class="ph">Zone sensible</div>
+    <button class="btn-d" onclick="resetAll()">🔄 Tout réinitialiser</button>
+  </div>
+</section>
+
+<nav>
+  <button class="on" data-t="budget" onclick="go('budget')">📋<br>Budget</button>
+  <button data-t="base" onclick="go('base')">🧾<br>Dépenses</button>
+  <button data-t="suivi" onclick="go('suivi')">📈<br>Suivi</button>
+  <button data-t="credit" onclick="go('credit')">🏦<br>Crédit</button>
+  <button data-t="reglages" onclick="go('reglages')">⚙️<br>Réglages</button>
+</nav>
+
+<script>
+const KEY='mon_plan_finance_v1', THEME='mon_plan_finance_theme';
+const CATS=['Fixes & Logement','Abonnements & Sport','Vie courante & Sorties','Autre'];
+const COL={'Fixes & Logement':'#3b82f6','Abonnements & Sport':'#8b5cf6','Vie courante & Sorties':'#f59e0b','Autre':'#ec4899'};
+const DEFAULT={
+  patrimoine:2000, credit:20000,
+  incomes:[{id:1,name:'Salaire principal',amount:3550},{id:2,name:'Location de parking',amount:90}],
+  expenses:[
+    {id:101,name:'Loyer',category:'Fixes & Logement',amount:1200},
+    {id:102,name:'Crédit',category:'Fixes & Logement',amount:485,isCredit:true},
+    {id:103,name:'Pass Navigo',category:'Fixes & Logement',amount:95},
+    {id:104,name:'Salle de sport',category:'Abonnements & Sport',amount:40},
+    {id:105,name:'Free (Forfait 1)',category:'Abonnements & Sport',amount:25},
+    {id:106,name:'Free (Forfait 2)',category:'Abonnements & Sport',amount:20},
+    {id:107,name:'Disney+',category:'Abonnements & Sport',amount:15},
+    {id:108,name:'Amazon Prime',category:'Abonnements & Sport',amount:10},
+    {id:109,name:'Assurance logement',category:'Abonnements & Sport',amount:10},
+    {id:110,name:'Nourriture',category:'Vie courante & Sorties',amount:400},
+    {id:111,name:'Sorties',category:'Vie courante & Sorties',amount:600},
+    {id:112,name:'Complément alimentaire',category:'Vie courante & Sorties',amount:150}
+  ]
+};
+const clone=o=>JSON.parse(JSON.stringify(o));
+const $=id=>document.getElementById(id);
+const eur=v=>new Intl.NumberFormat('fr-FR',{style:'currency',currency:'EUR',maximumFractionDigits:0}).format(v);
+const pc=v=>v.toFixed(1).replace('.',',')+' %';
+const esc=s=>String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;');
+const sum=l=>l.reduce((a,x)=>a+(Number(x.amount)||0),0);
+const mensualite=()=>sum(S.expenses.filter(x=>x.isCredit));
+
+let S=load();
+function load(){
+  try{const p=JSON.parse(localStorage.getItem(KEY));if(p&&p.incomes&&p.expenses){const d=Object.assign(clone(DEFAULT),p);delete d.mensualite;if(!d.expenses.some(e=>e.isCredit)){const c=d.expenses.find(e=>/cr[ée]dit/i.test(e.name));if(c)c.isCredit=true;}delete d.base;return d;}}catch(e){}
+  return clone(DEFAULT);
+}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S));}catch(e){}}
+
+/* Navigation & thème */
+function go(t){
+  document.querySelectorAll('.tab').forEach(x=>x.classList.toggle('on',x.id==='t-'+t));
+  document.querySelectorAll('nav button').forEach(b=>b.classList.toggle('on',b.dataset.t===t));
+  scrollTo(0,0); renderAll();
+}
+function setTheme(t){document.documentElement.setAttribute('data-theme',t);$('themeBtn').textContent=t==='dark'?'☀️':'🌙';try{localStorage.setItem(THEME,t);}catch(e){}}
+function toggleTheme(){setTheme(document.documentElement.getAttribute('data-theme')==='dark'?'light':'dark');}
+let th='dark';try{th=localStorage.getItem(THEME)||'dark';}catch(e){}
+setTheme(th);
+
+/* Édition */
+function setTop(k,v){S[k]=parseFloat(v)||0;save();renderSummary();renderCredit();}
+function edit(list,id,f,v){
+  const t=S[list].find(x=>x.id===id);if(!t)return;
+  t[f]=f==='amount'?(parseFloat(v)||0):v;save();renderSummary();
+}
+function add(e,list){
+  e.preventDefault();
+  if(list==='incomes'){S.incomes.push({id:Date.now(),name:$('i-n').value.trim(),amount:parseFloat($('i-a').value)||0});$('i-n').value='';$('i-a').value='';}
+  else{S.expenses.push({id:Date.now(),name:$('e-n').value.trim(),category:$('e-c').value,amount:parseFloat($('e-a').value)||0});$('e-n').value='';$('e-a').value='';}
+  save();renderAll();
+}
+function del(list,id){S[list]=S[list].filter(x=>x.id!==id);save();renderAll();}
+
+/* Rendu Budget */
+function renderTables(){
+  $('patri').value=S.patrimoine;$('cred').value=S.credit;
+  $('e-c').innerHTML=CATS.map(c=>`<option>${c}</option>`).join('');
+  $('incomes').innerHTML=S.incomes.map(i=>`<tr>
+    <td><input class="in" value="${esc(i.name)}" oninput="edit('incomes',${i.id},'name',this.value)"></td>
+    <td><input class="in num" type="number" step="any" value="${i.amount}" oninput="edit('incomes',${i.id},'amount',this.value)"></td>
+    <td class="pct" id="pi-${i.id}"></td>
+    <td><button class="btn-d" onclick="del('incomes',${i.id})">×</button></td></tr>`).join('');
+  $('expenses').innerHTML=S.expenses.map(x=>`<tr>
+    <td><input class="in" value="${esc(x.name)}" oninput="edit('expenses',${x.id},'name',this.value)">
+    <select class="in" style="font-size:.75rem;color:var(--muted);padding:2px 5px" onchange="edit('expenses',${x.id},'category',this.value);renderSummary()">${CATS.map(c=>`<option ${c===x.category?'selected':''}>${c}</option>`).join('')}</select>
+    <button style="padding:2px 8px;font-size:.7rem;margin:2px 5px;opacity:${x.isCredit?1:.35}" title="Mensualité du crédit" onclick="toggleCredit(${x.id})">🏦 crédit</button></td>
+    <td><input class="in num" type="number" step="any" value="${x.amount}" oninput="edit('expenses',${x.id},'amount',this.value)"></td>
+    <td class="pct" id="pe-${x.id}"></td>
+    <td><button class="btn-d" onclick="del('expenses',${x.id})">×</button></td></tr>`).join('');
+  renderSummary();
+}
+function renderSummary(){
+  const inc=sum(S.incomes),out=sum(S.expenses),sav=inc-out,rate=inc>0?sav/inc*100:0;
+  $('k-in').textContent=eur(inc);$('k-out').textContent=eur(out);
+  $('k-sav').textContent=eur(sav);$('k-sav').className='val '+(sav>=0?'good':'bad');
+  $('k-rate').textContent=pc(rate);$('k-rate').style.color=rate>=20?'var(--success)':rate>0?'var(--warning)':'var(--danger)';
+  S.incomes.forEach(i=>{const e=$('pi-'+i.id);if(e)e.textContent=pc(inc>0?i.amount/inc*100:0);});
+  S.expenses.forEach(x=>{const e=$('pe-'+x.id);if(e)e.textContent=pc(inc>0?x.amount/inc*100:0);});
+  // catégories
+  const tot={};CATS.forEach(c=>tot[c]=0);
+  S.expenses.forEach(x=>{tot[CATS.includes(x.category)?x.category:'Autre']+=Number(x.amount)||0;});
+  $('cats').innerHTML=CATS.filter(c=>tot[c]>0).map(c=>{const p=out>0?tot[c]/out*100:0;
+    return `<div class="bar"><div class="t"><span><span class="dot" style="background:${COL[c]}"></span>${c}</span><span>${eur(tot[c])} · ${pc(p)}</span></div><div class="track"><div class="fill" style="width:${p}%;background:${COL[c]}"></div></div></div>`;}).join('');
+  // top postes
+  const top=[...S.expenses].filter(x=>x.amount>0).sort((a,b)=>b.amount-a.amount).slice(0,5);
+  let h=top.map(x=>{const p=inc>0?Math.min(100,x.amount/inc*100):0;
+    return `<div class="bar"><div class="t"><span>${esc(x.name)}</span><span>${eur(x.amount)} · ${pc(p)}</span></div><div class="track"><div class="fill" style="width:${p}%;background:${COL[x.category]||'#3b82f6'}"></div></div></div>`;}).join('');
+  if(sav>0&&inc>0){const p=Math.min(100,sav/inc*100);
+    h+=`<div class="bar good"><div class="t"><span>💰 Épargne</span><span>${eur(sav)} · ${pc(p)}</span></div><div class="track"><div class="fill" style="width:${p}%;background:var(--success)"></div></div></div>`;}
+  $('top').innerHTML=h;
+  const mm=out>0?S.patrimoine/out:0;$('k-mat').textContent=mm.toFixed(1).replace('.',',')+' mois';
+  renderReal();renderCredit();
+}
+
+/* Prévu vs réel */
+function renderReal(){
+  const L=S.expenses.filter(x=>x.category==='Vie courante & Sorties');
+  if(!L.length){$('real').innerHTML='<div class="hint">Aucune dépense dans « Vie courante & Sorties ».</div>';return;}
+  const pl=sum(L),re=L.reduce((a,x)=>a+(Number(x.real)||0),0);
+  const d=new Date(),dim=new Date(d.getFullYear(),d.getMonth()+1,0).getDate();
+  $('real').innerHTML=`<div class="hint" style="margin:0 0 12px">Dépensé <b>${eur(re)}</b> sur ${eur(pl)} prévus · reste <b class="${pl-re>=0?'good':'bad'}">${eur(pl-re)}</b> (jour ${d.getDate()}/${dim})</div>`+
+  L.map(x=>{const r=Number(x.real)||0,p=x.amount>0?r/x.amount*100:0;
+    const c=p>100?'var(--danger)':p>=80?'var(--warning)':'var(--success)';
+    return `<div class="bar"><div class="t"><span>${esc(x.name)}</span><span>${eur(r)} / ${eur(x.amount)}</span></div>
+    <div class="track"><div class="fill" style="width:${Math.min(100,p)}%;background:${c}"></div></div>
+    <form class="add" style="margin:6px 0 0" onsubmit="addReal(event,${x.id})"><input id="r-${x.id}" type="number" step="any" placeholder="+ dépense (€)" required><button class="btn-p">+</button><button type="button" onclick="resetReal(${x.id})" title="Remettre à 0">↺</button></form></div>`;}).join('')+'<button style="margin-top:4px" onclick="resetAllReal()">↺ Nouveau mois (tout remettre à 0)</button>';
+}
+function resetAllReal(){if(confirm('Nouveau mois : remettre tous les compteurs « réel » à 0 ?')){S.expenses.forEach(x=>x.real=0);save();renderReal();}}
+function addReal(e,id){e.preventDefault();const x=S.expenses.find(i=>i.id===id);if(!x)return;
+  x.real=(Number(x.real)||0)+(parseFloat($('r-'+id).value)||0);save();renderReal();}
+function resetReal(id){const x=S.expenses.find(i=>i.id===id);if(x&&confirm('Remettre « '+x.name+' » à 0 ce mois-ci ?')){x.real=0;save();renderReal();}}
+function toggleCredit(id){const x=S.expenses.find(i=>i.id===id);if(x){x.isCredit=!x.isCredit;save();renderAll();}}
+
+/* Crédit */
+function monthsLeft(extra=0){const m=mensualite()+extra;return m>0?Math.ceil(S.credit/m):null;}
+function renderCredit(){
+  $('c-rest').textContent=eur(S.credit);$('c-men').textContent=eur(mensualite());
+  const n=monthsLeft();
+  $('c-mois').textContent=n===null?'—':n+' mois ('+(n/12).toFixed(1).replace('.',',')+' ans)';
+  if(n===null)$('c-fin').textContent='—';
+  else{const d=new Date();d.setMonth(d.getMonth()+n);$('c-fin').textContent=d.toLocaleDateString('fr-FR',{month:'long',year:'numeric'});}
+  calcExtra();
+}
+function calcExtra(){
+  const ex=parseFloat($('c-extra').value)||0,el=$('c-extra-res');
+  if(!ex){el.textContent='Saisis un montant pour voir combien de mois tu gagnes.';return;}
+  const a=monthsLeft(),b=monthsLeft(ex);
+  if(a===null||b===null){el.textContent='Renseigne ta mensualité.';return;}
+  el.innerHTML=`Avec <b>${eur(mensualite()+ex)}</b>/mois : fini dans <b>${b} mois</b> au lieu de ${a} → <b class="good">${a-b} mois gagnés</b> (estimation, hors intérêts et éventuelles pénalités de remboursement anticipé).`;
+}
+
+/* Sauvegarde */
+function dl(blob,name){const u=URL.createObjectURL(blob),a=document.createElement('a');a.href=u;a.download=name;a.click();setTimeout(()=>URL.revokeObjectURL(u),1000);}
+function exportJSON(){dl(new Blob([JSON.stringify(S,null,2)],{type:'application/json'}),'backup_finance.json');}
+function exportCSV(){
+  const q=s=>'"'+String(s).replace(/"/g,'""')+'"';
+  let c='Type;Categorie;Poste;Montant (EUR)\n';
+  c+=`Indicateur;Bilan;Patrimoine;${S.patrimoine}\nIndicateur;Bilan;Credit Restant;${S.credit}\n`;
+  S.incomes.forEach(i=>c+=`Revenu;Entree;${q(i.name)};${i.amount}\n`);
+  S.expenses.forEach(e=>c+=`Depense;${q(e.category)};${q(e.name)};${e.amount}\n`);
+  dl(new Blob(['﻿'+c],{type:'text/csv;charset=utf-8'}),'budget_mensuel.csv');
+}
+function importJSON(ev){
+  const f=ev.target.files[0];if(!f)return;
+  const r=new FileReader();
+  r.onload=e=>{try{const p=JSON.parse(e.target.result);
+    if(!p.incomes||!p.expenses)throw 0;
+    S=Object.assign(clone(DEFAULT),p);if(p.creditRestant!==undefined&&p.credit===undefined)S.credit=p.creditRestant;delete S.base;
+    save();renderAll();alert('Import réussi ✅');}catch(x){alert('Fichier invalide.');}};
+  r.readAsText(f);ev.target.value='';
+}
+function resetAll(){if(confirm('Tout effacer et revenir aux valeurs par défaut ?')){S=clone(DEFAULT);save();renderAll();}}
+
+function renderAll(){renderTables();}
+$('mois').textContent=new Date().toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+renderAll();
+</script>
+</body>
+</html>
