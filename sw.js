@@ -1,7 +1,7 @@
 // Mon Plan Finance — service worker : l'app marche sans réseau.
 // Pour publier une mise à jour : augmente le numéro de CACHE ci-dessous.
 // L'app ouverte détecte alors la nouvelle version et se recharge toute seule.
-const CACHE = 'plan-finance-v13';
+const CACHE = 'plan-finance-v14';
 const SHELL = [
   './',
   './index.html',
