@@ -25,10 +25,29 @@
   <!-- EN-TÊTE APPLE LARGE TITLE -->
   <header class="top">
     <div class="wrap">
-      <div class="date" id="date"></div>
-      <h1 id="screenTitle">Mes dépenses</h1>
+      <div class="top-bar">
+        <div class="top-title">
+          <div class="date" id="date"></div>
+          <h1 id="screenTitle">Mes dépenses</h1>
+        </div>
+        <button type="button" class="menu-btn" id="menuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="appMenu">
+          <svg class="ic" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
     </div>
   </header>
+
+  <!-- MENU LISTE EN HAUT (Réglages) -->
+  <div class="menu-wrap" id="appMenu" hidden>
+    <div class="menu-backdrop" id="menuBackdrop" aria-hidden="true"></div>
+    <nav class="card menu-sheet" aria-label="Menu principal">
+      <button type="button" class="menu-item" data-tab="reglages">
+        <span class="menu-ic"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.3M12 18.7V21M3 12h2.3M18.7 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M5.6 18.4l1.6-1.6M16.8 7.2l1.6-1.6"/></svg></span>
+        <span class="menu-txt"><strong>Réglages</strong><small>Apparence &amp; sauvegarde</small></span>
+        <svg class="ic menu-chev" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </nav>
+  </div>
 
   <main class="wrap">
     <!-- ==================================================================
@@ -269,7 +288,7 @@
   <!-- TOAST DE CONFIRMATION DISCRET -->
   <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
 
-  <!-- BARRE DE NAVIGATION iOS GLASS (4 ONGLETS) -->
+  <!-- BARRE D'ONGLETS iOS GLASS (3 ONGLETS CENTRÉS) -->
   <nav class="tabs" aria-label="Navigation">
     <div class="wrap">
       <button type="button" class="tab" data-tab="mois" aria-current="page">
@@ -300,16 +319,6 @@
           </svg>
         </span>
         Épargne
-      </button>
-
-      <button type="button" class="tab" data-tab="reglages">
-        <span class="tab-ic">
-          <svg class="ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M12 3v2.3M12 18.7V21M3 12h2.3M18.7 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M5.6 18.4l1.6-1.6M16.8 7.2l1.6-1.6"/>
-          </svg>
-        </span>
-        Réglages
       </button>
     </div>
   </nav>

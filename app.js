@@ -560,21 +560,32 @@
   // 7. NAVIGATION, ACTIONS & ÉVÉNEMENTS
   // ==========================================================================
 
+  function setMenuOpen(open) {
+    const m = $('appMenu');
+    const b = $('menuBtn');
+    if (m) m.hidden = !open;
+    if (b) b.setAttribute('aria-expanded', String(!!open));
+  }
+
   function goToTab(tabName) {
     if (document.activeElement && typeof document.activeElement.blur === 'function') {
       document.activeElement.blur();
     }
+    setMenuOpen(false);
     currentTab = TABS.includes(tabName) ? tabName : 'mois';
     TABS.forEach((t) => {
       $('view-' + t).hidden = t !== currentTab;
     });
-    document.querySelectorAll('.tab').forEach((btn) => {
+    document.querySelectorAll('.tab, .menu-item').forEach((btn) => {
       if (btn.dataset.tab === currentTab) {
         btn.setAttribute('aria-current', 'page');
       } else {
         btn.removeAttribute('aria-current');
       }
     });
+    if ($('menuBtn')) {
+      $('menuBtn').classList.toggle('is-active', currentTab === 'reglages');
+    }
     $('screenTitle').textContent = TAB_TITLES[currentTab];
     renderBudgetLists();
     window.scrollTo(0, 0);
@@ -809,8 +820,17 @@
 
   // --- Clics ---
   document.addEventListener('click', (event) => {
+    if (event.target && event.target.id === 'menuBackdrop') {
+      setMenuOpen(false);
+      return;
+    }
     const btn = event.target.closest('button');
     if (!btn) return;
+    if (btn.id === 'menuBtn') {
+      const m = $('appMenu');
+      setMenuOpen(m ? m.hidden : false);
+      return;
+    }
     const data = btn.dataset;
 
     if (data.tab) {
