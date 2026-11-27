@@ -1,0 +1,342 @@
+<!doctype html>
+<html lang="fr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="description" content="Mon Plan Finance — Suivi simple de mes dépenses, de mon budget et de mon épargne.">
+  <meta name="theme-color" content="#F2F2F7" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="default">
+  <meta name="apple-mobile-web-app-title" content="Plan Finance">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="apple-touch-icon.png?v=14">
+  <link rel="icon" type="image/png" sizes="192x192" href="icon-192.png?v=14">
+  <title>Mon Plan Finance</title>
+  <script>try{var t=localStorage.getItem('mon_plan_finance_apparence');if(t==='light'||t==='dark')document.documentElement.setAttribute('data-theme',t);}catch(e){}</script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
+  <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app" id="app">
+  <!-- EN-TÊTE APPLE LARGE TITLE -->
+  <header class="top">
+    <div class="wrap">
+      <div class="top-bar">
+        <div class="top-title">
+          <div class="date" id="date"></div>
+          <h1 id="screenTitle">Mes dépenses</h1>
+        </div>
+        <button type="button" class="menu-btn" id="menuBtn" aria-label="Ouvrir le menu" aria-expanded="false" aria-controls="appMenu">
+          <svg class="ic" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 7h16M4 12h16M4 17h16"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- MENU LISTE EN HAUT (Réglages) -->
+  <div class="menu-wrap" id="appMenu" hidden>
+    <div class="menu-backdrop" id="menuBackdrop" aria-hidden="true"></div>
+    <nav class="card menu-sheet" aria-label="Menu principal">
+      <button type="button" class="menu-item" data-tab="reglages">
+        <span class="menu-ic"><svg class="ic" width="20" height="20" viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="3"/><path d="M12 3v2.3M12 18.7V21M3 12h2.3M18.7 12H21M5.6 5.6l1.6 1.6M16.8 16.8l1.6 1.6M5.6 18.4l1.6-1.6M16.8 7.2l1.6-1.6"/></svg></span>
+        <span class="menu-txt"><strong>Réglages</strong><small>Apparence &amp; sauvegarde</small></span>
+        <svg class="ic menu-chev" width="16" height="16" viewBox="0 0 24 24" aria-hidden="true"><path d="M9 6l6 6-6 6"/></svg>
+      </button>
+    </nav>
+  </div>
+
+  <main class="wrap">
+    <!-- ==================================================================
+         ONGLET 1 : DÉPENSES (Reste à dépenser + Ajout 1-tap + Postes)
+         ================================================================== -->
+    <section class="view" id="view-mois" aria-label="Dépenses du mois">
+
+      <!-- Bannière de nouveau mois (visible uniquement au changement de mois) -->
+      <section class="card panel" id="monthBanner" hidden>
+        <h2 id="monthTitle"></h2>
+        <p class="hint">Veux-tu repartir à zéro pour ce nouveau mois ?</p>
+        <div class="btn-row">
+          <button type="button" class="btn" data-month="reset">Remettre à zéro</button>
+          <button type="button" class="ghost-btn" data-month="keep">Garder</button>
+        </div>
+      </section>
+
+      <!-- Carte principale : Reste à dépenser -->
+      <section class="card hero-card" aria-label="Reste à dépenser">
+        <div class="hero-top">
+          <div class="hero-main">
+            <span class="hero-label" id="leftLab">Reste à dépenser</span>
+            <div class="big" id="leftBig"></div>
+          </div>
+          <div class="hero-meta">
+            <button type="button" class="start-btn" id="startCycleBtn" aria-label="Démarrer le compteur à réception du salaire">
+              <svg class="ic" width="11" height="11" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5l12 7-12 7z" fill="currentColor" stroke="none"/></svg>
+              <span>Start</span>
+            </button>
+            <span class="pill" id="dayPill"></span>
+          </div>
+        </div>
+        <span class="meter" id="allMeter"><i></i><u></u></span>
+        <p class="hero-sub" id="allLine" hidden></p>
+        <div class="overdraft-wrap" id="overdraftWrap" hidden>
+          <button type="button" class="overdraft-row" id="overdraftToggle" aria-expanded="false" aria-controls="overdraftEdit">
+            <span class="overdraft-lab" id="overdraftLab">Découvert</span>
+            <span class="overdraft-right">
+              <b class="overdraft-val" id="overdraftVal" hidden></b>
+              <span class="overdraft-hint" id="overdraftHint">+ Ajouter</span>
+            </span>
+          </button>
+          <form class="overdraft-edit" id="overdraftEdit" hidden>
+            <label for="overdraftIn">Déduit du reste à dépenser</label>
+            <div class="overdraft-controls">
+              <span class="amt">
+                <input type="text" inputmode="decimal" autocomplete="off" id="overdraftIn" placeholder="0" aria-label="Montant du découvert en euros">
+                <span>€</span>
+              </span>
+              <button type="submit" class="btn">OK</button>
+              <button type="button" class="ghost-btn" id="overdraftZeroBtn">Remettre à 0</button>
+            </div>
+          </form>
+        </div>
+      </section>
+
+      <!-- Saisie rapide en 1 geste -->
+      <section class="card panel" id="addCard" aria-label="Noter une dépense">
+        <form id="addForm" class="quick-box">
+          <div class="add-amt">
+            <input type="text" inputmode="decimal" autocomplete="off" id="addAmt" placeholder="0" aria-label="Montant en euros">
+            <span>€</span>
+          </div>
+          <input type="text" class="add-note" autocomplete="off" id="addNote" placeholder="Note (optionnel)" aria-label="Note facultative">
+        </form>
+        <div class="quick-amts" role="group" aria-label="Montants rapides">
+          <button type="button" class="qamt-btn" data-qamt="5">+5 €</button>
+          <button type="button" class="qamt-btn" data-qamt="10">+10 €</button>
+          <button type="button" class="qamt-btn" data-qamt="20">+20 €</button>
+          <button type="button" class="qamt-btn" data-qamt="50">+50 €</button>
+        </div>
+        <div class="chips" id="addChips" role="group" aria-label="Choisir le poste"></div>
+        <p class="hint is-err" id="addHint" hidden></p>
+        <div class="undo" id="undoRow" hidden>
+          <span id="undoText"></span>
+          <button type="button" class="link-btn" id="undoBtn">Annuler</button>
+        </div>
+      </section>
+
+      <!-- Jauges par poste du quotidien -->
+      <div class="card list-card" id="lines"></div>
+
+      <!-- Historique de la période (repliable et épuré) -->
+      <details class="card fold" id="monthLogCard" hidden>
+        <summary>
+          <span>Historique</span>
+          <span class="fold-right">
+            <span class="fold-meta" id="logCount"></span>
+            <svg class="ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </span>
+        </summary>
+        <div class="fold-body">
+          <div class="log-filters" id="logFilters" role="group" aria-label="Filtrer par poste" hidden></div>
+          <p class="hint log-filter-sub" id="logFilterSub" hidden></p>
+          <div class="log-list" id="monthLogList"></div>
+          <button type="button" class="ghost-btn is-bad" id="newMonthBtn">Remettre les compteurs à zéro</button>
+        </div>
+      </details>
+
+      <!-- Archives des mois précédents -->
+      <details class="card fold" id="archivesCard" hidden>
+        <summary>
+          <span>Mois précédents</span>
+          <span class="fold-right">
+            <span class="fold-meta" id="archivesCount"></span>
+            <svg class="ic" width="18" height="18" viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6"/></svg>
+          </span>
+        </summary>
+        <div class="fold-body">
+          <div class="arch-list" id="archivesList"></div>
+          <button type="button" class="ghost-btn is-bad" id="clearArchivesBtn" hidden>Effacer toutes les archives</button>
+        </div>
+      </details>
+    </section>
+
+    <!-- ==================================================================
+         ONGLET 2 : BUDGET (Entrées − Sorties = 0 €, Quotidien, Fixes, Revenus)
+         ================================================================== -->
+    <section class="view" id="view-budget" aria-label="Mon budget mensuel" hidden>
+
+      <!-- Résumé : Entrées − Sorties = Balance (objectif 0 €) -->
+      <section class="card summary-card" aria-label="Résumé du budget">
+        <div class="summary-strip">
+          <div class="strip-col">
+            <span>Entrées</span>
+            <b id="b-in"></b>
+          </div>
+          <div class="strip-sep">−</div>
+          <div class="strip-col">
+            <span>Sorties</span>
+            <b id="b-out"></b>
+          </div>
+          <div class="strip-sep">=</div>
+          <div class="strip-col is-right">
+            <span>Balance</span>
+            <b id="b-bal" class="pos"></b>
+          </div>
+        </div>
+        <div class="budget-bar" id="budgetBar" aria-hidden="true">
+          <span id="barFix" class="bseg-fix"></span>
+          <span id="barSav" class="bseg-sav"></span>
+          <span id="barVar" class="bseg-var"></span>
+        </div>
+        <div class="budget-legend" id="budgetLegend"></div>
+      </section>
+
+      <section class="card panel" aria-label="Dépenses du quotidien">
+        <div class="panel-head">
+          <div>
+            <h2>Dépenses du quotidien</h2>
+            <p class="hint">Suivies dans « Dépenses »</p>
+          </div>
+          <span class="badge" id="varTotal"></span>
+        </div>
+        <div class="item-list" id="dailyExpensesList"></div>
+        <form class="add-row" id="varExpForm">
+          <input class="name-in" type="text" id="v-n" placeholder="Nouveau poste…" autocomplete="off" required aria-label="Nom du poste quotidien">
+          <span class="amt"><input type="text" inputmode="decimal" autocomplete="off" id="v-a" placeholder="0" required aria-label="Budget mensuel"><span>€</span></span>
+          <button class="add-btn" aria-label="Ajouter">+</button>
+        </form>
+      </section>
+
+      <section class="card panel" aria-label="Charges fixes">
+        <div class="panel-head">
+          <div>
+            <h2>Charges fixes</h2>
+            <p class="hint">Logement, abonnements, assurances, crédit…</p>
+          </div>
+          <span class="badge is-muted" id="fixTotal"></span>
+        </div>
+        <div class="fix-groups" id="fixedExpensesList"></div>
+        <form class="add-fix-form" id="fixExpForm">
+          <div class="fix-group-chips" id="fixGroupChips" role="group" aria-label="Choisir la mini-section"></div>
+          <div class="add-fix-fields">
+            <input class="name-in" type="text" id="f-n" placeholder="Nouvelle charge…" autocomplete="off" required aria-label="Nom de la charge fixe">
+            <span class="amt"><input type="text" inputmode="decimal" autocomplete="off" id="f-a" placeholder="0" required aria-label="Montant mensuel"><span>€</span></span>
+            <button class="add-btn" aria-label="Ajouter">+</button>
+          </div>
+        </form>
+      </section>
+
+      <section class="card panel" aria-label="Épargne">
+        <div class="panel-head">
+          <div>
+            <h2>Épargne</h2>
+            <p class="hint">Mis de côté chaque mois</p>
+          </div>
+          <span class="badge" id="savTotal"></span>
+        </div>
+        <div class="item-list" id="savingsExpensesList"></div>
+        <form class="add-row" id="savExpForm">
+          <input class="name-in" type="text" id="s-n" placeholder="Nouvelle épargne…" autocomplete="off" required aria-label="Nom du poste d'épargne">
+          <span class="amt"><input type="text" inputmode="decimal" autocomplete="off" id="s-a" placeholder="0" required aria-label="Montant mensuel"><span>€</span></span>
+          <button class="add-btn" aria-label="Ajouter">+</button>
+        </form>
+      </section>
+
+      <section class="card panel" aria-label="Revenus">
+        <div class="panel-head">
+          <div>
+            <h2>Revenus</h2>
+            <p class="hint">Entrées mensuelles</p>
+          </div>
+          <span class="badge is-muted" id="incTotal"></span>
+        </div>
+        <div class="item-list" id="incomes"></div>
+        <form class="add-row" id="incForm">
+          <input class="name-in" type="text" id="i-n" placeholder="Nouveau revenu…" autocomplete="off" required aria-label="Nom du revenu">
+          <span class="amt"><input type="text" inputmode="decimal" autocomplete="off" id="i-a" placeholder="0" required aria-label="Montant mensuel"><span>€</span></span>
+          <button class="add-btn" aria-label="Ajouter">+</button>
+        </form>
+      </section>
+    </section>
+
+    <!-- ==================================================================
+         ONGLET 3 : RÉGLAGES (Apparence & Sauvegarde)
+         ================================================================== -->
+    <section class="view" id="view-reglages" aria-label="Réglages" hidden>
+      <p class="sec-label">Préférences</p>
+      <section class="card panel" aria-label="Apparence">
+        <h2>Apparence</h2>
+        <div class="seg" role="group" aria-label="Thème">
+          <button type="button" data-look="auto">Auto</button>
+          <button type="button" data-look="light">Clair</button>
+          <button type="button" data-look="dark">Sombre</button>
+        </div>
+      </section>
+
+      <p class="sec-label">Données</p>
+      <section class="card panel" aria-label="Sauvegarde">
+        <h2>Mes données</h2>
+        <p class="hint" id="bkHint">Tout est enregistré uniquement sur ton téléphone.</p>
+        <div class="btn-row">
+          <button type="button" class="ghost-btn" id="exportJson">Exporter</button>
+          <button type="button" class="ghost-btn" id="importBtn">Importer</button>
+        </div>
+        <input type="file" id="imp" accept=".json,application/json" hidden>
+        <button type="button" class="ghost-btn is-bad" id="resetBtn">Réinitialiser l’application</button>
+      </section>
+    </section>
+  </main>
+
+  <!-- TOAST DE CONFIRMATION DISCRET -->
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+
+  <!-- BARRE D'ONGLETS iOS GLASS (2 ONGLETS CENTRÉS) -->
+  <nav class="tabs" aria-label="Navigation">
+    <div class="wrap">
+      <button type="button" class="tab" data-tab="mois" aria-current="page">
+        <span class="tab-ic">
+          <svg class="ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M4 7.5A2.5 2.5 0 0 1 6.5 5H17v3"/>
+            <path d="M4 7.5V17a2 2 0 0 0 2 2h14V8H6.5A2.5 2.5 0 0 1 4 7.5z"/>
+            <path d="M16 13.5h.5"/>
+          </svg>
+        </span>
+        Dépenses
+      </button>
+
+      <button type="button" class="tab" data-tab="budget">
+        <span class="tab-ic">
+          <svg class="ic" width="22" height="22" viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M8 6h12M8 12h12M8 18h12"/>
+            <path d="M4 6h.5M4 12h.5M4 18h.5"/>
+          </svg>
+        </span>
+        Budget
+      </button>
+    </div>
+  </nav>
+</div>
+
+<script src="app.js"></script>
+<script>
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', function () {
+    var hadSW = !!navigator.serviceWorker.controller, reloaded = false;
+    navigator.serviceWorker.addEventListener('controllerchange', function () {
+      if (!hadSW || reloaded) return;
+      reloaded = true;
+      location.reload();
+    });
+    navigator.serviceWorker.register('./sw.js', { updateViaCache: 'none' }).then(function (reg) {
+      document.addEventListener('visibilitychange', function () {
+        if (document.visibilityState === 'visible') reg.update().catch(function () {});
+      });
+    }).catch(function () {});
+  });
+}
+</script>
+</body>
+</html>
